@@ -3,7 +3,7 @@ services:
     image: yinko2/node-service:v1
     container_name: node-service
     ports:
-      - "5001:5000"
+      - "5000:5000"
   sonarqube:
     image: sonarqube:latest
     container_name: sonarqube
