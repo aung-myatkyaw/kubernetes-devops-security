@@ -5,7 +5,7 @@ metadata:
     app: devsecops
   name: devsecops
 spec:
-  replicas: 2
+  replicas: 3
   selector:
     matchLabels:
       app: devsecops
@@ -15,29 +15,39 @@ spec:
       labels:
         app: devsecops
     spec:
+      serviceAccountName: default
       volumes:
       - name: vol
         emptyDir: {}
       - name: spring-config
         configMap:
           name: devsecops-config
-      serviceAccountName: default
-      automountServiceAccountToken: false
       containers:
       - image: DEPLOY_IMAGE
         name: devsecops-container
         volumeMounts:
-        - mountPath: /tmp
-          name: vol
-        - name: spring-config
-          mountPath: /config
+          - mountPath: /tmp
+            name: vol
+          - name: spring-config
+            mountPath: /config
         securityContext:
-          runAsNonRoot: true
+          capabilities:
+            drop:
+             - NET_RAW
           runAsUser: 100
+          runAsNonRoot: true
           readOnlyRootFilesystem: true
+          allowPrivilegeEscalation: false
         env:
         - name: SPRING_CONFIG_LOCATION
           value: /config/application.properties
+        resources:
+         requests:
+          memory: "256Mi"
+          cpu: "200m"
+         limits:
+          memory: "512Mi"
+          cpu: "500m"
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -61,4 +71,20 @@ spec:
     targetPort: 8080
   selector:
     app: devsecops
-  type: NodePort
+  type: ClusterIP
+---
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: devsecops-vs
+spec:
+  gateways:
+  - istio-system/devsecops-gateway
+  hosts:
+  - PROD_WEBSITE_URL
+  http:
+  - route:
+    - destination:
+        host: devsecops-svc
+        port:
+          number: 8080

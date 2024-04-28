@@ -3,27 +3,28 @@ package com.devsecops;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.web.client.RestTemplateBuilder;
-import org.springframework.context.annotation.Bean;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 @RestController
 public class NumericController {
 
 	private final Logger logger = LoggerFactory.getLogger(getClass());
-	private static final String baseURL = "http://node-service:5000/plusone";
 	
 	RestTemplate restTemplate = new RestTemplate();
 	
 	@RestController
-	public class compare {
+	public class CompareValues {
+
+    	private final String baseURL;
+
+		@Autowired
+		public CompareValues(Properties properties) {
+			baseURL = properties.getBaseURL();
+		}
 
 		@GetMapping("/")
 		public String welcome() {
@@ -32,7 +33,7 @@ public class NumericController {
 
 		@GetMapping("/compare/{value}")
 		public String compareToFifty(@PathVariable int value) {
-			String message = "Could not determine comparison";
+			String message = "";
 			if (value > 50) {
 				message = "Greater than 50";
 			} else {

@@ -26,3 +26,13 @@ bin
 .classpath
 .project
 target
+.vscode
+
+# For Terraform
+*.tfstate
+*.tfstate.backup
+.terraform
+*.tfplan
+*.pem
+
+.DS_Store
